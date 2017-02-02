@@ -5,57 +5,122 @@
 #include <sys/shm.h>
 #include <sys/types.h>
 
-int main(int argc, char *argv[]) {
-  key_t key;             // cle d'accès à la structure IPC
-  int sem;               // identifiant du semaphore
-  int shm;               // identifiant de la memoire partagee
-  struct sembuf sembuf;  // gestion des operations semaphores
-  char *chaine = NULL;   // pointeur d'attachement shared memory
+#include "readmem.h"
 
-  if (argc != 2) {
-    fprintf(stderr, "Syntaxe : %s fichier_clé \n", argv[0]);
-    exit(EXIT_FAILURE);
-  }
+//clé en entrée
+int *read(key_t key)
+{
+    int shmid;
+    int *data = NULL;
 
-  // generation de la cle
-  if ((key = ftok(argv[1], 0)) == -1) {
-    perror("ftok");
-    exit(EXIT_FAILURE);
-  }
+    //accès à la mémoire partagée de la clé + récupération du data
+    shmid = shmget(key, 1024, 0666 | IPC_CREAT);
+    data = shmat(shmid, NULL, 0);
+    if ( data == (void *)-1 ) {
+        perror("shmat error");
+        exit(EXIT_FAILURE);
+    }
 
-  // acces a l'ensemble semaphore et a la memoire partagee
-  if (((sem = semget(key, 1, 0)) == -1) || ((shm = shmget(key, 0, 0)) == -1)) {
-    perror("semget/shmget");
-    exit(EXIT_FAILURE);
-  }
+    /*Affichage du contenu de la memoire*/
+    //On s'arr$ete quand case = -1
+    /*int i = 0;
+    while(data[i]!=-1)
+    {
+        printf("   data[%i]: %i \n", i, data[i]);
+        i++;
+    }
+    printf("_______________\n");*/
 
-  // attachement de la memoire partagee au pointeur *chaine
-  if ((chaine = shmat(shm, NULL, SHM_RDONLY)) == (void *)-1) {
-    perror("shmat");
-    exit(EXIT_FAILURE);
-  }
+    return (data);
+}
 
-  // preparation et execution de l'action P()
-  sembuf.sem_num = 0;
-  sembuf.sem_op = -1;
-  sembuf.sem_flg = 0;
-  if (semop(sem, &sembuf, 1) < 0) {
-    perror("semop");
-    exit(EXIT_FAILURE);
-  }
+int getTabs(){
 
-  // entree en section critique
-  // affichage du contenu de la memoire partagee
+    key_t key1, key2, key3;
+    int *dataGl = NULL, *dataH = NULL, *dataV = NULL;
 
-  fprintf(stdout, "%s\n", chaine);
+    //génération des clés
+    key1 = ftok("./labGen/keyfile", 0);
+    key2 = ftok("./labGen/keyfile", 1);
+    key3 = ftok("./labGen/keyfile", 2);
 
-  // preparation et execution de l'action V()
-  sembuf.sem_op = 1;
-  if (semop(sem, &sembuf, 1) < 0) {
-    perror("semop");
-    exit(EXIT_FAILURE);
-  }
+    dataGl = read(key1);
+    dataH = read(key2);
+    dataV = read(key3);
 
-  // sortie de section critique
-  return EXIT_SUCCESS;
+    //construction des tableaux
+
+    debutX = dataGl[0];
+    debutY = dataGl[1];
+    finX = 4;// dataGl[2];
+    finY = 1;//dataGl[3];
+
+
+    createTabsH(dataH);//horizontal
+    createTabsV(dataV);//vertical
+
+    printf("Fin création tableaux \n");
+
+}
+
+void createTabsH(int* data){
+
+    int HE = data[0];
+    int VE = data[1];
+
+    //malloc tableau
+	mursH = malloc(HE * sizeof(*mursH));
+
+	for(int i=0 ; i < HE ; i++){
+	     mursH[i] = malloc(VE * sizeof(**mursH));
+	}
+
+    int index = data[2]; //index début des valeurs
+    printf("index %d\n", index);
+    for(int i=0; i < HE; i++){
+        for(int j=0; j< VE; j++){
+            mursH[i][j] = data[index];
+            index++;
+        }
+    }
+
+	for(int i=0; i < HE; i++){
+        for(int j=0; j< VE; j++){
+            printf("%d ",mursH[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+}
+
+void createTabsV(int* data){
+
+    int HE = data[0];
+    int VE = data[1];
+
+    //malloc tableau
+	mursV = malloc(HE * sizeof(*mursV));
+
+	for(int i=0 ; i < HE ; i++){
+	     mursV[i] = malloc(VE * sizeof(**mursV));
+	}
+
+    int index = data[2]; //index début des valeurs
+    printf("index %d\n", index);
+    for(int i=0; i < HE; i++){
+        for(int j=0; j< VE; j++){
+            mursV[i][j] = data[index];
+            index++;
+        }
+    }
+
+	for(int i=0; i < HE; i++){
+        for(int j=0; j< VE; j++){
+            printf("%d ",mursV[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
 }

@@ -1,16 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int mursH[5][4] = {{1,1,1,1}, //matrice mur horizontal
+#include "readmem.h"
+
+int **mursH; /*[5][4] = {{1,1,1,1}, //matrice mur horizontal
                   {1,0,0,0},
                   {0,1,0,0},
                   {1,1,0,1},
-                  {1,0,1,1}};
+                  {1,0,1,1}};*/
 
-int mursV[4][5] = {{0,0,1,0,1}, //matrice mur vertical
+int **mursV; /*[4][5] = {{0,0,1,0,1}, //matrice mur vertical
                   {1,0,1,1,1},
                   {1,0,0,0,1},
-                  {1,0,0,0,1}};
+                  {1,0,0,0,1}};*/
 
 typedef struct {
     int presX; //d'ou on vient en x
@@ -23,6 +25,9 @@ t_case Parcours[4][4];
 
 int precX;
 int precY;
+
+int debutX = -1;
+int debutY = -1;
 int finX = 4;
 int finY = 1;
 
@@ -31,7 +36,9 @@ int main()
     printf("Bot Dijstra\n");
 
     //lecture tableau d'adjacence en mémoire partagée TODO
-    getTabAdjasence();
+    //getTabAdjasence();
+
+    getTabs();
 
     //première case
     int x = 0;
