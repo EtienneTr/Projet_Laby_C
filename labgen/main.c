@@ -11,9 +11,8 @@
 
 void initarray(int rows, int cols, int array[rows][cols], int minv);
 void inlineArray(int rows, int cols, int sourceArray[rows][cols], int flatArray[]);
-//TODO: fonction qui prend le tableau a une dimension et le met en deux
 
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
     system("clear"); printf("==================\n");
     
@@ -26,8 +25,8 @@ int main(int argc, char** argv)
     key2 = ftok("./keyfile", 1);
     key3 = ftok("./keyfile", 2);
     
-    clear(key1); 
-    clear(key2); 
+    clear(key1);
+    clear(key2);
     clear(key3);
     
     //TODO: mieux assigner la memoire
@@ -79,15 +78,15 @@ void inlineArray(int rows, int cols, int sourceArray[rows][cols], int flatArray[
     
     int offset = 2;//1er index utilisable
     int i, j;
-    int rowindex = offset;
+    int rowindex = offset+rows;
     for( i=0; i<rows; i++ )
     {
-        flatArray[i+offset] = rowindex;
-        //printf("flatArray[%i] = %i\n", i+offset, flatArray[i+offset]);
+        flatArray[offset+i] = rowindex;
+        printf("flatArray[%i] = %i\n", offset+i, flatArray[i+offset]);
         for( j=0; j<cols; j++ )
         {
             flatArray[rowindex+j] = sourceArray[i][j];
-            //printf("data[%i] = sourceArray[%i][%i] -> %i\n", rowindex+j, i, j, flatArray[rowindex+j]);
+            printf("flatArray[%i] = sourceArray[%i][%i] -> %i\n", rowindex+j, i, j, flatArray[rowindex+j]);
         }
         rowindex += cols;
     }
