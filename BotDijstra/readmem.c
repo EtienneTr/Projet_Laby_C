@@ -21,28 +21,17 @@ int *read(key_t key)
         exit(EXIT_FAILURE);
     }
 
-    /*Affichage du contenu de la memoire*/
-    //On s'arr$ete quand case = -1
-    /*int i = 0;
-    while(data[i]!=-1)
-    {
-        printf("   data[%i]: %i \n", i, data[i]);
-        i++;
-    }
-    printf("_______________\n");*/
-
     return (data);
 }
 
-int getTabs(){
+int getTabs(char* keyFile){
 
     key_t key1, key2, key3;
     int *dataGl = NULL, *dataH = NULL, *dataV = NULL;
-
     //génération des clés
-    key1 = ftok("./labGen/keyfile", 0);
-    key2 = ftok("./labGen/keyfile", 1);
-    key3 = ftok("./labGen/keyfile", 2);
+    key1 = ftok(keyFile, 0);
+    key2 = ftok(keyFile, 1);
+    key3 = ftok(keyFile, 2);
 
     dataGl = read(key1);
     dataH = read(key2);
@@ -65,8 +54,8 @@ int getTabs(){
 
 void createTabsH(int* data){
 
-    int HE = data[0];
-    int VE = data[1];
+    int HE = data[0];//Horizontal
+    int VE = data[1];//Vertical
 
     //malloc tableau
 	mursH = malloc(HE * sizeof(*mursH));

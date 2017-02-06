@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "readmem.h"
+#include "writemsg.h"
 
 int **mursH; /*[5][4] = {{1,1,1,1}, //matrice mur horizontal
                   {1,0,0,0},
@@ -31,28 +32,32 @@ int debutY = -1;
 int finX = 4;
 int finY = 1;
 
-int main()
+int main(int argc, char *argv[])
 {
     printf("Bot Dijstra\n");
 
-    //lecture tableau d'adjacence en mémoire partagée TODO
-    //getTabAdjasence();
+    char* keyFile = "";
+    if (argc != 2) {
+        //pas de clés
+        keyFile = "./labGen/keyfile";
+    } else {
+        //sinon paramètres
+        keyFile = argv[2];
+    }
 
-    getTabs();
+    getTabs(keyFile);
 
     //première case
     int x = 0;
     int y = 0;
     parcours(x, y);
 
+    tellMsg(keyFile);
+
+
+
     return 0;
 }
-
-void getTabAdjasence(){
-    //blabla
-
-}
-
 
 void parcours(int x, int y){
     int end = 25;//fin
@@ -179,6 +184,16 @@ void parcours(int x, int y){
         i = sI; j = sY;
     }
 
+}
+
+void tellMsg(char * keyFile){
+    writePile(keyFile, "Ready", "101");
+    char result[256];
+    int msg = readPile(result, keyFile, "102");
+
+    if(strcmp(result,"Go") == 0){
+        printf("Le bot envoie les positions");
+    }
 }
 
 void resetTabNext(int tab[12]){

@@ -9,7 +9,7 @@ extern int finX;
 extern int finY;
 
 int *read(key_t key);
-int getTabs();
+int getTabs(char* keyFile);
 void createTabsH(int* data);
 void createTabsV(int* data);
 
