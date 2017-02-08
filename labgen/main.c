@@ -1,110 +1,199 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <sys/shm.h>
-#include "read.h"
-#include "clear.h"
+#include "functions.h"
 
-#define ROWS 4
-#define COLS 4
-#define ROWSH ROWS+1
-#define COLSV COLS+1
+int **array;
+int **math;
+int **matv;
 
-void initarray(int rows, int cols, int array[rows][cols], int minv);
-void inlineArray(int rows, int cols, int sourceArray[rows][cols], int flatArray[]);
+int rows = 5;
+int cols = 5;
 
-int main(int argc, char** argv)
+void tabinit();
+void labgen();
+
+int main(int argc, char** argv) 
 {
-    system("clear"); printf("==================\n");
+    system("clear");
+    printf("==START==\n");
     
-    //TODO: gerer les erreurs
-    key_t key1, key2, key3;
-    int shmid1, shmid2, shmid3;
-    int *data1 = NULL, *data2 = NULL, *data3 = NULL;
+    labgen();
+    //displayarray(rows, cols, array);printf("\n");
+    //displayarray(rows+1, cols, math);printf("\n");
+    //displayarray(rows, cols+1, matv);printf("\n");
+    
+    
+    key_t key1, key2;
+    int shmid1, shmid2;
+    int sizeToAllocH = (((rows)*(cols+1))+2) * sizeof(int);
+    int sizeToAllocV = (((rows+1)*(cols))+2) * sizeof(int);
     
     key1 = ftok("./keyfile", 0);
     key2 = ftok("./keyfile", 1);
-    key3 = ftok("./keyfile", 2);
     
-    clear(key1);
-    clear(key2);
-    clear(key3);
+    clearshm(key1, sizeToAllocH);
+    clearshm(key2, sizeToAllocV);
     
-    //TODO: mieux assigner la memoire
-    shmid1 = shmget(key1, 1024, 0666 | IPC_CREAT);
-    shmid2 = shmget(key2, 1024, 0666 | IPC_CREAT);
-    shmid3 = shmget(key3, 1024, 0666 | IPC_CREAT);
+    shmid1 = shmget(key1, sizeToAllocH, 0666 | IPC_CREAT);
+    if(shmid1 < 0){
+        printf("shmid1 error.");
+    }
+    shmid2 = shmget(key2, sizeToAllocV, 0666 | IPC_CREAT);
+    if(shmid2 < 0){
+        printf("shmid2 error.");
+    }
     
-    data1 = shmat(shmid1, NULL, 0);
-    data2 = shmat(shmid2, NULL, 0);
-    data3 = shmat(shmid3, NULL, 0);
+    int *data1 = shmat(shmid1, NULL, 0);
+    int *data2 = shmat(shmid2, NULL, 0);
     
-    data1[0] = 404;//x_entree
-    data1[1] = 404;//y_entree
-    data1[2] = 404;//x_sortie
-    data1[3] = 404;//y_sortie
-    data1[4] = -1;
+    flattenArray(rows+1, cols, math, data1);
+    flattenArray(rows, cols+1, matv, data2);
     
-    /*Matrice horizontaux*/
-    int math[ROWSH][COLS] = {
-        {1, 1, 1, 1},
-        {1, 0, 0, 0},
-        {0, 1, 0, 0},
-        {1, 1, 0, 1},
-        {1, 0, 1, 1}
-    };
-    inlineArray(ROWSH, COLS, math, data2);
     
-    /*Matrice verticaux*/
-    int matv[ROWS][COLSV] = {
-        {0, 0, 1, 0, 1},
-        {1, 0, 1, 1, 1},
-        {1, 0, 0, 0, 1},
-        {1, 0, 0, 0, 1}
-    };
-    inlineArray(ROWS, COLSV, matv, data3);
+    //displayarray(rows+1, cols, math);
+    //readshm(key1, sizeToAllocH);
     
-    printf("1:\n"); read(key1);
-    printf("2:\n"); read(key2);
-    printf("3:\n"); read(key3);
+    //displayarray(rows, cols+1, matv);
+    //readshm(key2, sizeToAllocV);
     
     return (1);
 }
 
-/* Prend un tableau a deux dimensions et le met en une */
-void inlineArray(int rows, int cols, int sourceArray[rows][cols], int flatArray[])
+void tabinit()
 {
-    flatArray[0] = rows;
-    flatArray[1] = cols;
-    
-    int offset = 2;//1er index utilisable
-    int i, j;
-    int rowindex = offset+rows;
-    for( i=0; i<rows; i++ )
-    {
-        flatArray[offset+i] = rowindex;
-        printf("flatArray[%i] = %i\n", offset+i, flatArray[i+offset]);
-        for( j=0; j<cols; j++ )
-        {
-            flatArray[rowindex+j] = sourceArray[i][j];
-            printf("flatArray[%i] = sourceArray[%i][%i] -> %i\n", rowindex+j, i, j, flatArray[rowindex+j]);
-        }
-        rowindex += cols;
+    /* Initialise les tableaux*/
+    int i;
+    array = malloc(rows * sizeof(*array));
+    for(int i=0 ; i < rows ; i++){
+         array[i] = malloc(cols * sizeof(**array));
     }
-    flatArray[rowindex+cols] = -1;
+    initarray(rows, cols, array, 0, 1);
+    
+    //Murs horizontaux
+    math = malloc(sizeof *math * rows+1);
+    for(int i=0 ; i < rows+1 ; i++){
+         math[i] = malloc(sizeof *math[i] * cols);
+    }
+    initarray(rows+1, cols, math, 1, 0);
+    
+    //Murs verticaux
+    matv = malloc(sizeof *matv * rows);
+    for(int i=0 ; i < rows ; i++){
+         matv[i] = malloc(sizeof *matv[i] * cols+1);
+    }
+    initarray(rows, cols+1, matv, 1, 0);
 }
 
-/*Initialise le tableau de minv a ...*/
-void initarray(int rows, int cols, int array[rows][cols], int minv)
+void labgen()
 {
-    int i, j;
-    minv = 0;
-    for ( i=0; i<rows; i++ )
+    srand(time(NULL));
+    
+    tabinit();
+    
+    int count = 0;
+    while( isLabFinished(rows, cols, array, 0) != 1 )
     {
-        for ( j=0; j<cols; j++ )
+        count++;
+        
+        /* Choix d'une cell */
+        int rrow1 = randmax(rows);
+        int rcol1 = randmax(cols);
+        int rrow2 = rrow1;
+        int rcol2 = rcol1;
+        
+        /* Choix d'une celle adjacente a la première */
+        int bool = -1;
+        while( bool != 1 )
         {
-             array[i][j] = minv;
-             minv++;
+            switch( randmax(4) )
+            {
+                case 0:
+                    if(rrow2+1>=rows)
+                        break;
+                    else
+                    {
+                        rrow2++;
+                        bool = 1;
+                    }
+                    break;
+                case 1:
+                    if(rrow2-1<0)
+                        break;
+                    else
+                    {
+                        rrow2--;
+                        bool = 1;
+                    }
+                    break;
+                case 2:
+                    if(rcol2+1>=cols)
+                        break;
+                    else
+                    {
+                        rcol2++;
+                        bool = 1;
+                    }
+                    break;
+                case 3:
+                    if(rcol2-1<0)
+                        break;
+                    else
+                    {
+                        rcol2--;
+                        bool = 1;
+                    }
+                    break;
+            }
+        }
+        
+        /* Logique de creation du lab */
+        /*printf("%i: rrow1:%i > %i\n", count, rrow1, array[rrow1][rcol1]);
+        printf("   rcol1:%i\n", rcol1);
+        printf("   rrow2:%i > %i\n", rrow2, array[rrow2][rcol2]);
+        printf("   rcol2:%i\n", rcol2);*/
+        int smallv, bigv;
+        if( array[rrow1][rcol1] == array[rrow2][rcol2] )
+        {
+            continue;
+        }
+        else if( array[rrow1][rcol1] < array[rrow2][rcol2] )
+        {
+            smallv = array[rrow1][rcol1];
+            bigv = array[rrow2][rcol2];
+            floodfill(rows, cols, array, rrow2, rcol2, smallv, bigv);
+        }
+        else
+        {
+            smallv = array[rrow2][rcol2];
+            bigv = array[rrow1][rcol1];
+            floodfill(rows, cols, array, rrow1, rcol1, smallv, bigv);
+        }
+        
+        /* Gestions matrices de murs */
+        if ( rrow1 == rrow2 )
+        {//Même ligne
+            if( rcol1 < rcol2 )
+            {
+                matv[rrow1][rcol2] = 0;
+            }
+            else
+            {
+                matv[rrow1][rcol1] = 0;
+            }
+        }
+        if ( rcol1 == rcol2 )
+        {//Même colonne
+            if( rrow1 < rrow2 )
+            {
+                math[rrow2][rcol1] = 0;
+            }
+            else
+            {
+                math[rrow1][rcol1] = 0;
+            }
         }
     }
-    array[rows-1][cols] = -1;
+    createEntreeSortie(rows+1, cols, math, rows, cols+1, matv);
 }

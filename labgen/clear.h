@@ -1,1 +1,0 @@
-int clear(key_t key);

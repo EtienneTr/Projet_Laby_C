@@ -1,1 +1,0 @@
-int read(key_t key);
