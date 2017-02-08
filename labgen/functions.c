@@ -167,3 +167,41 @@ int readshm(key_t key, int size)
     
     return (1);
 }
+
+int getOpenWallH(int rows, int cols, int **array, int *r_row, int *r_col)
+{
+    int i;
+    for ( i=0; i<cols; i++ )
+    {
+        if( array[0][i]==0 )
+        {
+            *r_row = -1;
+            *r_col = i;
+        }
+        
+        if( array[rows-1][i]==0 )
+        {
+            *r_row = rows-1;
+            *r_col = i;
+        }
+    }
+}
+
+int getOpenWallV(int rows, int cols, int **array, int *r_row, int *r_col)
+{
+    int i;
+    for ( i=0; i<rows; i++ )
+    {
+        if( array[i][0]==0 )
+        {
+            *r_row = i;
+            *r_col = -1;
+        }
+        
+        if( array[i][cols-1]==0 )
+        {
+            *r_row = i;
+            *r_col = cols-1;
+        }
+    }
+}

@@ -14,7 +14,7 @@ int cols = 5;
 void tabinit();
 void labgen();
 
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
     system("clear");
     printf("==START==\n");
@@ -25,17 +25,24 @@ int main(int argc, char** argv)
     //displayarray(rows, cols+1, matv);printf("\n");
     
     
-    key_t key1, key2;
-    int shmid1, shmid2;
+    key_t key0, key1, key2;
+    int shmid0, shmid1, shmid2;
+    int sizeToAlloc0 = 4*sizeof(int);
     int sizeToAllocH = (((rows)*(cols+1))+2) * sizeof(int);
     int sizeToAllocV = (((rows+1)*(cols))+2) * sizeof(int);
     
-    key1 = ftok("./keyfile", 0);
-    key2 = ftok("./keyfile", 1);
+    key0 = ftok("./keyfile", 0);
+    key1 = ftok("./keyfile", 1);
+    key2 = ftok("./keyfile", 2);
     
+    clearshm(key0, sizeToAlloc0);
     clearshm(key1, sizeToAllocH);
     clearshm(key2, sizeToAllocV);
     
+    shmid0 = shmget(key0, sizeToAlloc0, 0666 | IPC_CREAT);
+    if(shmid0 < 0){
+        printf("shmid0 error.");
+    }
     shmid1 = shmget(key1, sizeToAllocH, 0666 | IPC_CREAT);
     if(shmid1 < 0){
         printf("shmid1 error.");
@@ -45,18 +52,38 @@ int main(int argc, char** argv)
         printf("shmid2 error.");
     }
     
+    int *data0 = shmat(shmid0, NULL, 0);
     int *data1 = shmat(shmid1, NULL, 0);
     int *data2 = shmat(shmid2, NULL, 0);
     
+    /* Data0 */
+    data0[0] = rows;
+    data0[1] = cols;
+    
+    int entree_row, entree_col;
+    getOpenWallH(rows+1, cols, math, &entree_row, &entree_col);
+    data0[2] = entree_row;
+    data0[3] = entree_col;
+    
+    int sortie_row, sortie_col;
+    getOpenWallV(rows, cols+1, matv, &sortie_row, &sortie_col);
+    data0[4] = sortie_row;
+    data0[5] = sortie_col;
+    
+    /* Data1 */
     flattenArray(rows+1, cols, math, data1);
+    /* Data2 */
     flattenArray(rows, cols+1, matv, data2);
     
     
     //displayarray(rows+1, cols, math);
     //readshm(key1, sizeToAllocH);
+    //printf("%i, %i\n", data0[2], data0[3]);
     
     //displayarray(rows, cols+1, matv);
     //readshm(key2, sizeToAllocV);
+    //printf("%i, %i\n", data0[4], data0[5]);
+    
     
     return (1);
 }

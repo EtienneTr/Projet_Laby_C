@@ -22,3 +22,7 @@ void flattenArray(int rows, int cols, int **sourceArray, int *flatArray);
 int clearshm(key_t key, int size);
 
 int readshm(key_t key, int size);
+
+int getOpenWallH(int rows, int cols, int **array, int *r_row, int *r_col);
+
+int getOpenWallV(int rows, int cols, int **array, int *r_row, int *r_col);
