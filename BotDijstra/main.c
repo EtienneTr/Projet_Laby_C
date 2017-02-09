@@ -50,12 +50,17 @@ int main(int argc, char *argv[])
     }
 
     int numBot = 0;
-    if(argc < 2){
+    /*if(argc < 2){
         numBot = 1;
     } else {
         numBot = atoi(argv[2]);
         printf("Bot num : %d\n", numBot);
-    }
+    }*/
+
+
+    printf("Numéro du bot: ");
+    scanf("%d", &numBot);
+    printf("Bot num : %d\n", numBot);
 
     getTabs(keyFile);
     printf("debut %d fin %d\n", debutX, debutY);
@@ -289,7 +294,7 @@ void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
                 continue;
             }
         }
-        writePile(keyFile, "Stop", "11");
+        writePile(keyFile, "Stop", id);
 
     }
 }
