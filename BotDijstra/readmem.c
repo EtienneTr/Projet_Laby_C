@@ -8,13 +8,17 @@
 #include "readmem.h"
 
 //clé en entrée
-int *read(key_t key)
+int *read(key_t key, int taille)
 {
     int shmid;
     int *data = NULL;
-
+    printf("read\n");
     //accès à la mémoire partagée de la clé + récupération du data
-    shmid = shmget(key, 1024, 0666 | IPC_CREAT);
+    shmid = shmget(key, taille, 0666 | IPC_CREAT);
+    if(shmid < 0){
+        printf("shmid error.");
+    }
+
     data = shmat(shmid, NULL, 0);
     if ( data == (void *)-1 ) {
         perror("shmat error");
@@ -33,16 +37,19 @@ int getTabs(char* keyFile){
     key2 = ftok(keyFile, 1);
     key3 = ftok(keyFile, 2);
 
-    dataGl = read(key1);
-    dataH = read(key2);
-    dataV = read(key3);
+    dataGl = read(key1, 4*sizeof(int));
+    rows = dataGl[0];
+    cols = dataGl[1];
+    printf("rows %d cols %d\n", rows, cols);
+    dataH = read(key2, (((rows)*(cols+1))+2) * sizeof(int));
+    dataV = read(key3, (((rows+1)*(cols))+2) * sizeof(int));
 
     //construction des tableaux
 
-    debutX = dataGl[0];
-    debutY = dataGl[1];
-    finX = 4;// dataGl[2];
-    finY = 1;//dataGl[3];
+    debutX = dataGl[2];
+    debutY = dataGl[3];
+    finX = dataGl[4];
+    finY = dataGl[5];
 
 
     createTabsH(dataH);//horizontal
@@ -64,7 +71,7 @@ void createTabsH(int* data){
 	     mursH[i] = malloc(VE * sizeof(**mursH));
 	}
 
-    int index = data[2]; //index début des valeurs
+    int index = 2; //index début des valeurs
     printf("index %d\n", index);
     for(int i=0; i < HE; i++){
         for(int j=0; j< VE; j++){
@@ -95,7 +102,7 @@ void createTabsV(int* data){
 	     mursV[i] = malloc(VE * sizeof(**mursV));
 	}
 
-    int index = data[2]; //index début des valeurs
+    int index = 2; //index début des valeurs
     printf("index %d\n", index);
     for(int i=0; i < HE; i++){
         for(int j=0; j< VE; j++){
