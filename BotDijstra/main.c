@@ -33,18 +33,28 @@ int finY = 1;
 int rows;
 int cols;
 int tailleSave;
+int nbChemin;
 
 int main(int argc, char *argv[])
 {
     printf("Bot Dijstra\n");
 
     char* keyFile = "";
-    if (argc != 2) {
+    if (argc < 2) {
         //pas de clés
-        keyFile = "./labGen/keyfile";
+        keyFile = "../labGen/keyfile";
     } else {
         //sinon paramètres
-        keyFile = argv[2];
+        keyFile = argv[1];
+        printf("Key : %s\n", keyFile);
+    }
+
+    int numBot = 0;
+    if(argc < 2){
+        numBot = 1;
+    } else {
+        numBot = atoi(argv[2]);
+        printf("Bot num : %d\n", numBot);
     }
 
     getTabs(keyFile);
@@ -53,11 +63,12 @@ int main(int argc, char *argv[])
     int x = firstCase(debutX, rows);
     int y = firstCase(debutY, cols);
 
+    int chemin[rows*cols*2];
     //algo Dijstra
-    parcours(x, y);
+    parcours(x, y, chemin);
 
     printGraph();
-    tellMsg(keyFile);
+    tellMsg(keyFile, chemin, numBot);
 
     return 0;
 }
@@ -72,7 +83,7 @@ int firstCase(int x, int max){
     return x;
 }
 
-void parcours(int x, int y){
+void parcours(int x, int y, int chemin[rows*cols*2]){
     printf("Rows %d cols %d x %d y %d\n", rows, cols, x, y);
     t_case **Parcours;
     //on initialise le tableau qui sauvegarde les cases utilisés (avec coordonnées case précédente)
@@ -81,7 +92,7 @@ void parcours(int x, int y){
 	     Parcours[i] = malloc(cols * sizeof(**Parcours));
 	}
 
-    int end = rows*cols;//fin max
+    int end = rows*cols*2;//fin max
     int i=x; int j=y;//indexs
     int currIndex = 0; //numéro cases
 
@@ -227,26 +238,59 @@ void parcours(int x, int y){
     i = finX;
     j = finY;
     int sI; int sY;
+    int ind = 0;
     //On a trouvé la fin, plus qu'à créerle chemin.
     //On repart à l'inverse
     while(Parcours[i][j].valeur != 0) {
         printf("Case %d %d numéro %d & %d %d\n", i, j, Parcours[i][j].valeur, Parcours[i][j].presX, Parcours[i][j].presY);
         sI = Parcours[i][j].presX;
         sY = Parcours[i][j].presY;
-        Parcours[i][j].valeur = -2;
+        chemin[ind] = i;
+        chemin[ind + 1] = j;
+        ind += 2;
         i = sI; j = sY;
     }
+    chemin[ind] = i;
+    chemin[ind + 1] = j;
+    nbChemin = ind + 1;
+
     printf("Case %d %d numéro %d & %d %d\n", i, j, Parcours[i][j].valeur, Parcours[i][j].presX, Parcours[i][j].presY);
 
 }
 
-void tellMsg(char * keyFile){
-    writePile(keyFile, "Ready", "101");
-    char result[256];
-    int msg = readPile(result, keyFile, "102");
+void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
 
-    if(strcmp(result,"Go") == 0){
-        printf("Le bot envoie les positions");
+    char* id = malloc(10 * sizeof(int));
+    char* id2 = malloc(10 * sizeof(int));
+    sprintf(id,"%d",nbBot);
+
+    writePile(keyFile, "Ready", id);
+    char *result= malloc(256);
+    int msg = readPile(result, keyFile, id);
+    char *p;
+    char *saveptr1;
+    p = strtok_r(result, ",", &saveptr1);
+    printf("Affichage P %s\n",p);
+
+    if(strcmp(p,"Go") == 0){
+        //récup du numéro d'écriture
+        int numPile = atoi(strtok_r(NULL, ",", &saveptr1));
+        printf("Le bot envoie les positions, numPile %d\n", numPile);
+        char* msg;
+        msg = malloc(10 * sizeof(int));
+        for(int i = nbChemin; i >= 0; i -= 2){
+            sprintf(msg,"%d,%d",chemin[i-1], chemin[i]); // i,j
+            sprintf(id,"%d",numPile);
+            printf("Envoie %s\n", msg);
+            writePile(keyFile, msg, id);
+            sprintf(id2,"%d",numPile + 1);
+            int msg = readPile(result, keyFile, id2);
+            if(strcmp(result,"Go") == 0){
+                continue;
+            }
+        }
+        writePile(keyFile, "Stop", "11");
+
     }
 }
 

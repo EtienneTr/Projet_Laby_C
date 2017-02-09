@@ -64,13 +64,11 @@ char *readPile(char result[], char* keyFile, char* id)
 	return result;
 }
 
-void waitBot(int nbBot, char* keyFile){
+void waitBot(int numBot, char* keyFile){
     char result[256];
 
     //on attend de recevoir les messages de tous les bots
-    for(int i=1; i<= nbBot; i++){
-        readPile(result, keyFile, i);
-    }
+    //readPile(result, keyFile, i);
 
     //on envoie un message à chaque bot avec un id d'écriture spécifique
 
