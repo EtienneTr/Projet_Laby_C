@@ -8,18 +8,25 @@ int **array;
 int **math;
 int **matv;
 
-int rows = 5;
-int cols = 5;
-
-void tabinit();
-void labgen();
+void tabinit(int rows, int cols);
+void labgen(int rows, int cols);
 
 int main(int argc, char** argv)
 {
     system("clear");
     printf("==START==\n");
     
-    labgen();
+    int rows = 5;
+    int cols = 5;
+    if (argc > 2)
+    {
+        rows = strtol(argv[1], NULL, 10);
+        cols = strtol(argv[2], NULL, 10);
+        printf("rows=%i | cols=%i\n", rows, cols);
+    }
+
+    
+    labgen(rows, cols);
     //displayarray(rows, cols, array);printf("\n");
     //displayarray(rows+1, cols, math);printf("\n");
     //displayarray(rows, cols+1, matv);printf("\n");
@@ -27,7 +34,7 @@ int main(int argc, char** argv)
     
     key_t key0, key1, key2;
     int shmid0, shmid1, shmid2;
-    int sizeToAlloc0 = 4*sizeof(int);
+    int sizeToAlloc0 = 6*sizeof(int);
     int sizeToAllocH = (((rows)*(cols+1))+2) * sizeof(int);
     int sizeToAllocV = (((rows+1)*(cols))+2) * sizeof(int);
     
@@ -35,9 +42,7 @@ int main(int argc, char** argv)
     key1 = ftok("./keyfile", 1);
     key2 = ftok("./keyfile", 2);
     
-    clearshm(key0, sizeToAlloc0);
-    clearshm(key1, sizeToAllocH);
-    clearshm(key2, sizeToAllocV);
+    
     
     shmid0 = shmget(key0, sizeToAlloc0, 0666 | IPC_CREAT);
     if(shmid0 < 0){
@@ -75,6 +80,9 @@ int main(int argc, char** argv)
     /* Data2 */
     flattenArray(rows, cols+1, matv, data2);
     
+    readshm(key0, sizeToAlloc0);
+    readshm(key1, sizeToAllocH);
+    readshm(key2, sizeToAllocV);
     
     //displayarray(rows+1, cols, math);
     //readshm(key1, sizeToAllocH);
@@ -84,11 +92,14 @@ int main(int argc, char** argv)
     //readshm(key2, sizeToAllocV);
     //printf("%i, %i\n", data0[4], data0[5]);
     
+    clearshm(key0, sizeToAlloc0);
+    clearshm(key1, sizeToAllocH);
+    clearshm(key2, sizeToAllocV);
     
     return (1);
 }
 
-void tabinit()
+void tabinit(int rows, int cols)
 {
     /* Initialise les tableaux*/
     int i;
@@ -113,11 +124,11 @@ void tabinit()
     initarray(rows, cols+1, matv, 1, 0);
 }
 
-void labgen()
+void labgen(int rows, int cols)
 {
     srand(time(NULL));
     
-    tabinit();
+    tabinit(rows, cols);
     
     int count = 0;
     while( isLabFinished(rows, cols, array, 0) != 1 )
