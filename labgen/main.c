@@ -23,17 +23,11 @@ int main(int argc, char** argv)
     printf("Bot num : %d\n", nbbot);
     
     /*On recup le nb de lignes et colonnes*/
-    if (argc > 2)
-    {
-        rows = strtol(argv[1], NULL, 10);
-        cols = strtol(argv[2], NULL, 10);
-        printf("rows=%i | cols=%i\n", rows, cols);
-    }
-    else
-    {
-        int rows = 5;
-        int cols = 5;
-    }
+    int rows, cols;
+    printf("Nombre de lignes du labyrinthe: ");
+    scanf("%d", &rows);
+    printf("Nombre de colonnes du labyrinthe: ");
+    scanf("%d", &cols);
 
     /*Generation du labyrinthe*/
     labgen(rows, cols);
