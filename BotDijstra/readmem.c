@@ -7,7 +7,7 @@
 
 #include "readmem.h"
 
-//clé en entrée
+//Lecture de la mémoire avec la clé et la taille de lecture en entrée
 int *read(key_t key, int taille)
 {
     int shmid;
@@ -27,6 +27,7 @@ int *read(key_t key, int taille)
     return (data);
 }
 
+//Récupération des datas en mémoire partagée
 int getTabs(char* keyFile){
     printf("Récupération des segments de mémoire partagée ...\n");
     key_t key1, key2, key3;
@@ -39,12 +40,11 @@ int getTabs(char* keyFile){
     dataGl = read(key1, 4*sizeof(int));
     rows = dataGl[0];
     cols = dataGl[1];
-    //printf("rows %d cols %d\n", rows, cols);
+    //data murs Horizontaux et verticaux
     dataH = read(key2, (((rows)*(cols+1))+2) * sizeof(int));
     dataV = read(key3, (((rows+1)*(cols))+2) * sizeof(int));
 
     //construction des tableaux
-
     debutX = dataGl[2];
     debutY = dataGl[3];
     finX = dataGl[4];
@@ -58,6 +58,7 @@ int getTabs(char* keyFile){
 
 }
 
+//Création tableau horizontal
 void createTabsH(int* data){
 
     int HE = data[0];//Horizontal
@@ -71,7 +72,6 @@ void createTabsH(int* data){
 	}
 
     int index = 2; //index début des valeurs
-    //printf("index %d\n", index);
     for(int i=0; i < HE; i++){
         for(int j=0; j< VE; j++){
             mursH[i][j] = data[index];
@@ -79,15 +79,10 @@ void createTabsH(int* data){
         }
     }
 
-	/*for(int i=0; i < HE; i++){
-        for(int j=0; j< VE; j++){
-            //printf("%d ",mursH[i][j]);
-        }
-        //printf("\n");
-    }*/
 
 }
 
+//Création tableau vertical
 void createTabsV(int* data){
 
     int HE = data[0];
@@ -101,20 +96,11 @@ void createTabsV(int* data){
 	}
 
     int index = 2; //index début des valeurs
-    //printf("index %d\n", index);
     for(int i=0; i < HE; i++){
         for(int j=0; j< VE; j++){
             mursV[i][j] = data[index];
             index++;
         }
     }
-
-	/*for(int i=0; i < HE; i++){
-        for(int j=0; j< VE; j++){
-            printf("%d ",mursV[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n\n");*/
 
 }

@@ -6,16 +6,9 @@
 
 #define DEBUG 0
 
-int **mursH; /*[5][4] = {{1,1,1,1}, //matrice mur horizontal
-                  {1,0,0,0},
-                  {0,1,0,0},
-                  {1,1,0,1},
-                  {1,0,1,1}};*/
+int **mursH; //murs horizontaux
 
-int **mursV; /*[4][5] = {{0,0,1,0,1}, //matrice mur vertical
-                  {1,0,1,1,1},
-                  {1,0,0,0,1},
-                  {1,0,0,0,1}};*/
+int **mursV; //murs verticaux
 
 typedef struct {
     int presX; //d'ou on vient en x
@@ -23,15 +16,12 @@ typedef struct {
     int valeur; //valeur de la case infini (-1)
 }t_case;
 
-int precX;
-int precY;
-
-int debutX = -1;
-int debutY = -1;
-int finX = 4;
-int finY = 1;
-int rows;
-int cols;
+int debutX = -1; //coordonée X entrée
+int debutY = -1; //coordonnée Y entrée
+int finX = 4;    //coordonéne X sortie
+int finY = 1;    //coordonnée Y sortie
+int rows;        //nombre de lignes du laby
+int cols;        //nombre de colonnes du laby
 int tailleSave;
 int nbChemin;
 
@@ -39,10 +29,11 @@ int main(int argc, char *argv[])
 {
     printf("Bot Dijstra\n");
 
+    //Argument : changer le keyfile
     char* keyFile = "";
     if (argc < 2) {
         //pas de clés
-        keyFile = "../labgen/keyfile";
+        keyFile = "./labGen/keyfile";
     } else {
         //sinon paramètres
         keyFile = argv[1];
@@ -50,34 +41,32 @@ int main(int argc, char *argv[])
     }
 
     int numBot = 0;
-    /*if(argc < 2){
-        numBot = 1;
-    } else {
-        numBot = atoi(argv[2]);
-        printf("Bot num : %d\n", numBot);
-    }*/
-
-
-    printf("Numéro du bot: ");
+    //demande du numéro du bot
+    printf("Veuillez indiquer un numéro unique du bot (ex: 1) : ");
     scanf("%d", &numBot);
-    printf("Bot num : %d\n", numBot);
+    printf("Bot numéro : %d\n", numBot);
 
     getTabs(keyFile);
-    printf("debut %d fin %d\n", debutX, debutY);
+    printf("Coordonnées entrée : %d %d, de sortie : %d %d\n", debutX, debutY, finX, finY);
     //première case
     int x = firstCase(debutX, rows);
     int y = firstCase(debutY, cols);
 
+    //tableau contenant le chemin à parcourir pour aller du début à la fin du laby
     int chemin[rows*cols*2];
     //algo Dijstra
     parcours(x, y, chemin);
 
+    //affichage du labyrinthe, optimisé pour les petit laby (taille < 40)
     printGraph();
+
+    //Début de la communication avec le programme principal
     tellMsg(keyFile, chemin, numBot);
 
     return 0;
 }
 
+//placement de la première case dans le labyrinthe (entrée)
 int firstCase(int x, int max){
     if(x < 0){
         x = 0;
@@ -88,8 +77,11 @@ int firstCase(int x, int max){
     return x;
 }
 
+//Fonction qui calcul le plus cours chemin et l'insère dans le tableau chemin
 void parcours(int x, int y, int chemin[rows*cols*2]){
+
     if( DEBUG == 1) printf("Rows %d cols %d x %d y %d\n", rows, cols, x, y);
+
     t_case **Parcours;
     //on initialise le tableau qui sauvegarde les cases utilisés (avec coordonnées case précédente)
     Parcours = malloc(rows * sizeof(*Parcours));
@@ -97,7 +89,7 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 	     Parcours[i] = malloc(cols * sizeof(**Parcours));
 	}
 
-    int end = rows*cols*2;//fin max
+    int end = rows*cols*2;//fin max, sécurité
     int i=x; int j=y;//indexs
     int currIndex = 0; //numéro cases
 
@@ -105,6 +97,7 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
     int presX = debutX;
     int presY = debutY;
 
+    //tableaux qui sauvegardes les cases à visiter, i+1 et i+2
     tailleSave = rows*cols/2;
     int next[tailleSave];
     resetTabNext(next);
@@ -118,17 +111,18 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 
     while(end != 1){
 
-        //TODO
         if( DEBUG == 1) printf("i:%d, j:%d, presX:%d presY:%d\n",i,j,presX,presY);
-        //fprintf(fichier,"i:%d, j:%d, presX:%d presY:%d\n",i,j,presX,presY);
 
+        //si on est sur la case de fin, on ne se déplace pas et on passe à la case enregistrée suivante
         if(i == finX && j == finY){
-            if( DEBUG == 1) printf("FIN\n");
+            if( DEBUG == 1) printf("case fin\n");
         }else{
+
         //test droite = mur vertical droite
         if(mursV[i][j+1] == 0 && (j+1 != presY) && j-1 <= cols-1){
+
             if( DEBUG == 1) printf("Droite : %d %d\n", i, j+1);
-            //fprintf(fichier,"Droite : %d %d\n", i, j+1);
+
             if(Parcours[i][j+1].valeur == NULL || Parcours[i][j+1].valeur > currIndex + 1){
                 if( DEBUG == 1) printf("Index %d\n", currIndex + 1);
                 Parcours[i][j+1].valeur = currIndex + 1;
@@ -142,8 +136,9 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 
         //test gauche = mur vertical gauche
         if(mursV[i][j] == 0 && (j-1 != presY) && (j-1 >= 0 || (j-1 == finY && i == finX))){
+
             if( DEBUG == 1) printf("Gauche : %d %d\n", i, j-1);
-            //fprintf(fichier,"Gauche : %d %d\n", i, j-1);
+
             if(Parcours[i][j-1].valeur == NULL || Parcours[i][j-1].valeur > currIndex + 1){
                 if( DEBUG == 1) printf("Index %d\n", currIndex + 1);
                 Parcours[i][j-1].valeur = currIndex + 1;
@@ -157,8 +152,9 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 
         //test haut = mur horizontal haut
         if(mursH[i][j] == 0 && (i-1 != presX) && (i-1 >= 0 || (i-1 == finX && j == finY))){
+
             if( DEBUG == 1) printf("Haut : %d %d parc %d\n", i-1, j, Parcours[i-1][j].valeur);
-            //fprintf(fichier,"Haut : %d %d parc %d\n", i-1, j, Parcours[i-1][j].valeur);
+
             if(Parcours[i-1][j].valeur == NULL || Parcours[i-1][j].valeur > currIndex + 1){
                 if( DEBUG == 1) printf("Index %d\n", currIndex + 1);
                 Parcours[i-1][j].valeur = currIndex + 1;
@@ -172,15 +168,15 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 
         //test bas = mur horizontal bas
         if(mursH[i+1][j] == 0 && (i+1 != presX) && i+1 <= rows - 1){
+
             if( DEBUG == 1) printf("Bas : %d %d %d\n", i+1, j, Parcours[i+1][j].valeur);
-            //fprintf(fichier,"Bas : %d %d parc %d\n", i-1, j, Parcours[i+1][j].valeur);
+
             if(Parcours[i+1][j].valeur == NULL || Parcours[i+1][j].valeur > currIndex + 1){
                 if( DEBUG == 1) printf("Index %d\n", currIndex + 1);
                 Parcours[i+1][j].valeur = currIndex + 1;
                 Parcours[i+1][j].presX = i;
                 Parcours[i+1][j].presY = j;
             }
-            printf("nextp index \n");
             nextP[nIndexP] = i+1;
             nextP[nIndexP + 1] = j;
             nIndexP += 2;
@@ -193,6 +189,8 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 
         if( DEBUG == 1) printTab(nextP);
         if( DEBUG == 1) printTab(next);
+
+        //Gestion des tableaux d'enregistrement des cases à visiter
         nIndex -= 2;
         if(nIndex < 0){
             if( DEBUG == 1) printf("Reset next \n");
@@ -207,14 +205,17 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
         if( DEBUG == 1) printf("Reset all %d nI %d nIP %d\n", currIndex, nIndex, nIndexP);
         //fprintf(fichier,"Reset all %d nI %d nIP %d\n", currIndex, nIndex, nIndexP);
 
+        //Condition de fin : on a visiter toutes les cases
         if(currIndex + 1 > rows*cols && nIndexP == 0){
             break;
         }
         if( DEBUG == 1) printTab(next);
 
+        //Gestion cas ou l'index est mal placé
         while(next[nIndex] == -1 && nIndex > 0){
             nIndex -= 2;
         }
+        //Gestion tableaux de grande taille qui plante
         if(nextP[0] == -1 && next[0] == -1){
             break;
         }
@@ -225,29 +226,25 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
         next[nIndex + 1] = -1;
 
         if( DEBUG == 1) printf("i %d j %d\n", i, j);
-        //pres
+        //Set de la case précédente
         presX = Parcours[i][j].presX;
         presY = Parcours[i][j].presY;
 
-        //printTab(next);
         currIndex++;
-
         end--;
+
         if( DEBUG == 1) printf("\n\nNext\n");
-        //fprintf(fichier,"\n ------ \n");
 
     }
 
-    //fclose(fichier);
-
+    //on se place sur la case de sortie et on parcourt le laby à l'inverse
     i = finX;
     j = finY;
     int sI; int sY;
     int ind = 0;
-    //On a trouvé la fin, plus qu'à créerle chemin.
-    //On repart à l'inverse
+    //on insère le chemin dans le tableau chemin
     while(Parcours[i][j].valeur != 0) {
-        printf("Case %d %d numéro %d & %d %d\n", i, j, Parcours[i][j].valeur, Parcours[i][j].presX, Parcours[i][j].presY);
+        printf("Déplacement case %d %d\n", i, j, Parcours[i][j].valeur, Parcours[i][j].presX, Parcours[i][j].presY);
         sI = Parcours[i][j].presX;
         sY = Parcours[i][j].presY;
         chemin[ind] = i;
@@ -255,32 +252,35 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
         ind += 2;
         i = sI; j = sY;
     }
+    //sortie
     chemin[ind] = i;
     chemin[ind + 1] = j;
     nbChemin = ind + 1;
 
-    printf("Case %d %d numéro %d & %d %d\n", i, j, Parcours[i][j].valeur, Parcours[i][j].presX, Parcours[i][j].presY);
+    printf("Sortie case %d %d\n", i, j, Parcours[i][j].valeur, Parcours[i][j].presX, Parcours[i][j].presY);
 
 }
 
+//Communication en pile de message
 void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
 
-    char* id = malloc(10 * sizeof(int));
-    char* id2 = malloc(10 * sizeof(int));
+    char* id = malloc(10 * sizeof(int)); //id du premier canal d'écriture
+    char* id2 = malloc(10 * sizeof(int)); //id du canal de réponse, en écoute
     sprintf(id,"%d",nbBot);
 
+    //on indique qu'on est prêt pour la communication
     writePile(keyFile, "Ready", id);
     char *result= malloc(256);
+    //en retour on a un message de type : Go,id avec 'id' le canal sur lequel il faut écrire
     int msg = readPile(result, keyFile, id);
     char *p;
     char *saveptr1;
     p = strtok_r(result, ",", &saveptr1);
-    //printf("Affichage P %s\n",p);
 
     if(strcmp(p,"Go") == 0){
-        //récup du numéro d'écriture
+        //récup du canal d'écriture, lecture = canal écriture + 1
         int numPile = atoi(strtok_r(NULL, ",", &saveptr1));
-        printf("Le bot envoie les positions, numPile %d\n", numPile);
+        printf("Le bot envoie les positions, canal n° %d\n", numPile);
         char* msg;
         msg = malloc(10 * sizeof(int));
         for(int i = nbChemin; i >= 0; i -= 2){
@@ -294,17 +294,20 @@ void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
                 continue;
             }
         }
+        //on stop
         writePile(keyFile, "Stop", id);
 
     }
 }
 
+//Vide d'un tableaux
 void resetTabNext(int tab[tailleSave]){
     for(int y=0; y < tailleSave; y++){
         tab[y] = -1;
     }
 }
 
+//Affichage pour débug
 void printTab(int tab[tailleSave]){
     for(int y=0; y < tailleSave; y++){
         if(tab[y] == -1){
@@ -315,6 +318,7 @@ void printTab(int tab[tailleSave]){
     printf("\n");
 }
 
+//affichage laby en fonction des matrices de murs
 void printGraph(){
     int entre = 0;
     int sortie = 0;
@@ -380,22 +384,4 @@ void printGraph(){
         }
         printf("\n");
     }
-
-    /*for(int i=0; i< 11; i++){
-        for(int j=0; j< 11; j++){
-                if(tab[i][j] == "x"){
-                    if(tab[i][j+1] != " " && tab[i+1][j] != " " && tab[i-1][j] != " " && tab[i][j-1] != " "){
-                        tab[i][j] = "┼";
-                    }
-                }
-        }
-    }
-
-    printf("test %s",tab[1]);*/
-    /*for(int i=0; i< 11; i++){
-        for(int j=0; j< 11; j++){
-                printf("%c",tab[i][j]);
-        }
-        printf("\n");
-    }*/
 }
