@@ -219,7 +219,7 @@ int main(int argc, char **argv)
     printf("Veuillez indiquer un numéro unique du bot (ex: 1) : ");
     scanf("%d", &numBot);
     printf("Bot numéro : %d\n", numBot);
-    
+
 	int debutX = 0;
 	int debutY = -1;
     getTabs(keyFile);
@@ -256,7 +256,7 @@ int main(int argc, char **argv)
 		}
 	}
 	printf("position atcuel: x:%d, y:%d direction: %d FIN DU LABYRINTHE\n", bot.cols, bot.rows, bot.d);
-	
+	nbChemin = ind - 1;
 	//envoie pile
 	tellMsg(keyFile, chemin, numBot);
 
@@ -273,6 +273,7 @@ int firstCase(int x, int max){
     return x;
 }
 
+//Communication en pile de message
 void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
 
     char* id = malloc(10 * sizeof(int)); //id du premier canal d'écriture
@@ -282,6 +283,7 @@ void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
     //on indique qu'on est prêt pour la communication
     writePile(keyFile, "Ready", id);
     char *result= malloc(256);
+    wait(5);
     //en retour on a un message de type : Go,id avec 'id' le canal sur lequel il faut écrire
     int msg = readPile(result, keyFile, id);
     char *p;
@@ -294,8 +296,8 @@ void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
         printf("Le bot envoie les positions, canal n° %d\n", numPile);
         char* msg;
         msg = malloc(10 * sizeof(int));
-        for(int i = 0; i != nbChemin; i -= 2){
-            sprintf(msg,"%d,%d",chemin[i+1], chemin[i]); // i,j
+        for(int i = nbChemin; i >= 0; i -= 2){
+            sprintf(msg,"%d,%d",chemin[i-1], chemin[i]); // i,j
             sprintf(id,"%d",numPile);
             printf("Envoie %s\n", msg);
             writePile(keyFile, msg, id);
@@ -310,3 +312,4 @@ void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
 
     }
 }
+
