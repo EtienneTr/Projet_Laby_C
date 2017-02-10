@@ -57,19 +57,20 @@ int isLabFinished(int rows, int cols, int **array, int minv)
     return 1;
 }
 
-/*Check les cases adjacentes et change leurs valeurs si elles ont la même que bigv
- * par recursivité
- */
+/*Check les cases adjacentes et change leurs valeurs si elles ont la même que bigv par recursivité*/
 void floodfill(int rows, int cols, int **array, int row, int col, int smallv, int bigv)
 {
+	/*Condition d'arret: la case est hors limites du tableau*/
     if(row<0 || col<0 || row>=rows || col>=cols){
         return;
     }
+	/*Condition d'arret: la case n'a pas la valeur que l'on veux modifier*/
     else if( array[row][col] != bigv ){
         return;
     } 
     else 
     {
+		/*On change la valeur de la case est appele la fonction sur les 4 cases adjacentes*/
         array[row][col] = smallv;
         floodfill(rows, cols, array, row,   col+1, smallv, bigv);
         floodfill(rows, cols, array, row+1, col,   smallv, bigv);
@@ -130,7 +131,6 @@ int clearshm(key_t key, int size)
     int shmid;
     char *data = NULL;
 
-    //key = ftok("./keyfile", 0);
     shmid = shmget(key, size, 0666 | IPC_CREAT);
     data = shmat(shmid, NULL, 0);
     if ( data == (void *)-1 ) {

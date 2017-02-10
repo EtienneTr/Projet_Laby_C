@@ -5,6 +5,8 @@
 #include "functions.h"
 #include "writemsg.h"
 
+int debug = 0;
+
 int **array;
 int **math;
 int **matv;
@@ -31,10 +33,12 @@ int main(int argc, char** argv)
 
     /*Generation du labyrinthe*/
     labgen(rows, cols);
-    /*Affichage pour debug*/
-    //displayarray(rows, cols, array);printf("\n");
-    //displayarray(rows+1, cols, math);printf("\n");
-    //displayarray(rows, cols+1, matv);printf("\n");
+	
+	if(debug == 1){
+		displayarray(rows, cols, array);printf("\n");
+		displayarray(rows+1, cols, math);printf("\n");
+		displayarray(rows, cols+1, matv);printf("\n");
+	}
     
     /*Initialisation des segments de memoire partagés*/
     key_t key0, key1, key2;
@@ -86,25 +90,28 @@ int main(int argc, char** argv)
     /* Data2 */
     flattenArray(rows, cols+1, matv, data2);
     
-    /*Lecture memoire pour debug*/
-    //readshm(key0, sizeToAlloc0);
-    //readshm(key1, sizeToAllocH);
-    //readshm(key2, sizeToAllocV);
-    //displayarray(rows+1, cols, math);
-    //displayarray(rows, cols+1, matv);
-    
+	if(debug == 1){
+		readshm(key0, sizeToAlloc0);
+		readshm(key1, sizeToAllocH);
+		readshm(key2, sizeToAllocV);
+		displayarray(rows+1, cols, math);
+		displayarray(rows, cols+1, matv);
+    }
+	
     /*Gestion des bots*/
     waitBot(nbbot, keyfile);
     
-    /*Encore du debug*/
-    //displayarray(rows+1, cols, math);
-    //readshm(key1, sizeToAllocH);
-    //printf("%i, %i\n", data0[2], data0[3]);
+    if(debug == 1){
+		displayarray(rows+1, cols, math);
+		readshm(key1, sizeToAllocH);
+		printf("%i, %i\n", data0[2], data0[3]);
+		
+		displayarray(rows, cols+1, matv);
+		readshm(key2, sizeToAllocV);
+		printf("%i, %i\n", data0[4], data0[5]);
+	}
     
-    //displayarray(rows, cols+1, matv);
-    //readshm(key2, sizeToAllocV);
-    //printf("%i, %i\n", data0[4], data0[5]);
-    
+	/*Clear les segments de memoire*/
     clearshm(key0, sizeToAlloc0);
     clearshm(key1, sizeToAllocH);
     clearshm(key2, sizeToAllocV);
@@ -199,11 +206,12 @@ void labgen(int rows, int cols)
             }
         }
         
-        /*Some debug*/
-        //printf("%i: rrow1:%i > %i\n", count, rrow1, array[rrow1][rcol1]);
-        //printf("   rcol1:%i\n", rcol1);
-        //printf("   rrow2:%i > %i\n", rrow2, array[rrow2][rcol2]);
-        //printf("   rcol2:%i\n", rcol2);
+        if(debug == 1){
+			printf("%i: rrow1:%i > %i\n", count, rrow1, array[rrow1][rcol1]);
+			printf("   rcol1:%i\n", rcol1);
+			printf("   rrow2:%i > %i\n", rrow2, array[rrow2][rcol2]);
+			printf("   rcol2:%i\n", rcol2);
+		}
         
         /* Coeur de la logique de creation du lab */
         int smallv, bigv;
