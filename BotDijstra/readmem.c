@@ -12,7 +12,6 @@ int *read(key_t key, int taille)
 {
     int shmid;
     int *data = NULL;
-    printf("read\n");
     //accès à la mémoire partagée de la clé + récupération du data
     shmid = shmget(key, taille, 0666 | IPC_CREAT);
     if(shmid < 0){
@@ -29,7 +28,7 @@ int *read(key_t key, int taille)
 }
 
 int getTabs(char* keyFile){
-
+    printf("Récupération des segments de mémoire partagée ...\n");
     key_t key1, key2, key3;
     int *dataGl = NULL, *dataH = NULL, *dataV = NULL;
     //génération des clés
@@ -40,7 +39,7 @@ int getTabs(char* keyFile){
     dataGl = read(key1, 4*sizeof(int));
     rows = dataGl[0];
     cols = dataGl[1];
-    printf("rows %d cols %d\n", rows, cols);
+    //printf("rows %d cols %d\n", rows, cols);
     dataH = read(key2, (((rows)*(cols+1))+2) * sizeof(int));
     dataV = read(key3, (((rows+1)*(cols))+2) * sizeof(int));
 
@@ -55,7 +54,7 @@ int getTabs(char* keyFile){
     createTabsH(dataH);//horizontal
     createTabsV(dataV);//vertical
 
-    printf("Fin création tableaux \n");
+    printf("Fin création des tableaux. \n");
 
 }
 
@@ -72,7 +71,7 @@ void createTabsH(int* data){
 	}
 
     int index = 2; //index début des valeurs
-    printf("index %d\n", index);
+    //printf("index %d\n", index);
     for(int i=0; i < HE; i++){
         for(int j=0; j< VE; j++){
             mursH[i][j] = data[index];
@@ -80,13 +79,12 @@ void createTabsH(int* data){
         }
     }
 
-	for(int i=0; i < HE; i++){
+	/*for(int i=0; i < HE; i++){
         for(int j=0; j< VE; j++){
-            printf("%d ",mursH[i][j]);
+            //printf("%d ",mursH[i][j]);
         }
-        printf("\n");
-    }
-    printf("\n\n");
+        //printf("\n");
+    }*/
 
 }
 
@@ -103,7 +101,7 @@ void createTabsV(int* data){
 	}
 
     int index = 2; //index début des valeurs
-    printf("index %d\n", index);
+    //printf("index %d\n", index);
     for(int i=0; i < HE; i++){
         for(int j=0; j< VE; j++){
             mursV[i][j] = data[index];
@@ -111,12 +109,12 @@ void createTabsV(int* data){
         }
     }
 
-	for(int i=0; i < HE; i++){
+	/*for(int i=0; i < HE; i++){
         for(int j=0; j< VE; j++){
             printf("%d ",mursV[i][j]);
         }
         printf("\n");
     }
-    printf("\n\n");
+    printf("\n\n");*/
 
 }

@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     char* keyFile = "";
     if (argc < 2) {
         //pas de clés
-        keyFile = "../labGen/keyfile";
+        keyFile = "../labgen/keyfile";
     } else {
         //sinon paramètres
         keyFile = argv[1];
@@ -89,7 +89,7 @@ int firstCase(int x, int max){
 }
 
 void parcours(int x, int y, int chemin[rows*cols*2]){
-    printf("Rows %d cols %d x %d y %d\n", rows, cols, x, y);
+    if( DEBUG == 1) printf("Rows %d cols %d x %d y %d\n", rows, cols, x, y);
     t_case **Parcours;
     //on initialise le tableau qui sauvegarde les cases utilisés (avec coordonnées case précédente)
     Parcours = malloc(rows * sizeof(*Parcours));
@@ -105,7 +105,7 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
     int presX = debutX;
     int presY = debutY;
 
-    tailleSave = rows*cols/4;
+    tailleSave = rows*cols/2;
     int next[tailleSave];
     resetTabNext(next);
     int nIndex = -1;
@@ -114,23 +114,23 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
     resetTabNext(nextP);
     int nIndexP = 0;
 
-    printf("Debut algo\n");
+    if( DEBUG == 1) printf("Debut algo\n");
 
     while(end != 1){
 
         //TODO
-        printf("i:%d, j:%d, presX:%d presY:%d\n",i,j,presX,presY);
+        if( DEBUG == 1) printf("i:%d, j:%d, presX:%d presY:%d\n",i,j,presX,presY);
         //fprintf(fichier,"i:%d, j:%d, presX:%d presY:%d\n",i,j,presX,presY);
 
         if(i == finX && j == finY){
-            printf("FIN\n");
+            if( DEBUG == 1) printf("FIN\n");
         }else{
         //test droite = mur vertical droite
         if(mursV[i][j+1] == 0 && (j+1 != presY) && j-1 <= cols-1){
-            printf("Droite : %d %d\n", i, j+1);
+            if( DEBUG == 1) printf("Droite : %d %d\n", i, j+1);
             //fprintf(fichier,"Droite : %d %d\n", i, j+1);
             if(Parcours[i][j+1].valeur == NULL || Parcours[i][j+1].valeur > currIndex + 1){
-                printf("Index %d\n", currIndex + 1);
+                if( DEBUG == 1) printf("Index %d\n", currIndex + 1);
                 Parcours[i][j+1].valeur = currIndex + 1;
                 Parcours[i][j+1].presX = i;
                 Parcours[i][j+1].presY = j;
@@ -142,10 +142,10 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 
         //test gauche = mur vertical gauche
         if(mursV[i][j] == 0 && (j-1 != presY) && (j-1 >= 0 || (j-1 == finY && i == finX))){
-            printf("Gauche : %d %d\n", i, j-1);
+            if( DEBUG == 1) printf("Gauche : %d %d\n", i, j-1);
             //fprintf(fichier,"Gauche : %d %d\n", i, j-1);
             if(Parcours[i][j-1].valeur == NULL || Parcours[i][j-1].valeur > currIndex + 1){
-                printf("Index %d\n", currIndex + 1);
+                if( DEBUG == 1) printf("Index %d\n", currIndex + 1);
                 Parcours[i][j-1].valeur = currIndex + 1;
                 Parcours[i][j-1].presX = i;
                 Parcours[i][j-1].presY = j;
@@ -157,10 +157,10 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 
         //test haut = mur horizontal haut
         if(mursH[i][j] == 0 && (i-1 != presX) && (i-1 >= 0 || (i-1 == finX && j == finY))){
-            printf("Haut : %d %d parc %d\n", i-1, j, Parcours[i-1][j].valeur);
+            if( DEBUG == 1) printf("Haut : %d %d parc %d\n", i-1, j, Parcours[i-1][j].valeur);
             //fprintf(fichier,"Haut : %d %d parc %d\n", i-1, j, Parcours[i-1][j].valeur);
             if(Parcours[i-1][j].valeur == NULL || Parcours[i-1][j].valeur > currIndex + 1){
-                printf("Index %d\n", currIndex + 1);
+                if( DEBUG == 1) printf("Index %d\n", currIndex + 1);
                 Parcours[i-1][j].valeur = currIndex + 1;
                 Parcours[i-1][j].presX = i;
                 Parcours[i-1][j].presY = j;
@@ -172,10 +172,10 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
 
         //test bas = mur horizontal bas
         if(mursH[i+1][j] == 0 && (i+1 != presX) && i+1 <= rows - 1){
-            printf("Bas : %d %d %d\n", i+1, j, Parcours[i+1][j].valeur);
+            if( DEBUG == 1) printf("Bas : %d %d %d\n", i+1, j, Parcours[i+1][j].valeur);
             //fprintf(fichier,"Bas : %d %d parc %d\n", i-1, j, Parcours[i+1][j].valeur);
             if(Parcours[i+1][j].valeur == NULL || Parcours[i+1][j].valeur > currIndex + 1){
-                printf("Index %d\n", currIndex + 1);
+                if( DEBUG == 1) printf("Index %d\n", currIndex + 1);
                 Parcours[i+1][j].valeur = currIndex + 1;
                 Parcours[i+1][j].presX = i;
                 Parcours[i+1][j].presY = j;
@@ -191,11 +191,11 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
         presX = i;
         presY = j;
 
-        printTab(nextP);
-        printTab(next);
+        if( DEBUG == 1) printTab(nextP);
+        if( DEBUG == 1) printTab(next);
         nIndex -= 2;
         if(nIndex < 0){
-            printf("Reset next \n");
+            if( DEBUG == 1) printf("Reset next \n");
             for(int y=0; y < tailleSave; y++){
                 next[y] = nextP[y];
             }
@@ -204,13 +204,13 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
             nIndexP = 0;
         }
 
-        printf("Reset all %d nI %d nIP %d\n", currIndex, nIndex, nIndexP);
+        if( DEBUG == 1) printf("Reset all %d nI %d nIP %d\n", currIndex, nIndex, nIndexP);
         //fprintf(fichier,"Reset all %d nI %d nIP %d\n", currIndex, nIndex, nIndexP);
 
         if(currIndex + 1 > rows*cols && nIndexP == 0){
             break;
         }
-        printTab(next);
+        if( DEBUG == 1) printTab(next);
 
         while(next[nIndex] == -1 && nIndex > 0){
             nIndex -= 2;
@@ -224,7 +224,7 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
         next[nIndex] = -1;
         next[nIndex + 1] = -1;
 
-        printf("i %d j %d\n", i, j);
+        if( DEBUG == 1) printf("i %d j %d\n", i, j);
         //pres
         presX = Parcours[i][j].presX;
         presY = Parcours[i][j].presY;
@@ -233,7 +233,7 @@ void parcours(int x, int y, int chemin[rows*cols*2]){
         currIndex++;
 
         end--;
-        printf("\n\nNext\n");
+        if( DEBUG == 1) printf("\n\nNext\n");
         //fprintf(fichier,"\n ------ \n");
 
     }
@@ -275,7 +275,7 @@ void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
     char *p;
     char *saveptr1;
     p = strtok_r(result, ",", &saveptr1);
-    printf("Affichage P %s\n",p);
+    //printf("Affichage P %s\n",p);
 
     if(strcmp(p,"Go") == 0){
         //récup du numéro d'écriture
