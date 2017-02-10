@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     char* keyFile = "";
     if (argc < 2) {
         //pas de clés
-        keyFile = "./labGen/keyfile";
+        keyFile = "../labGen/keyfile";
     } else {
         //sinon paramètres
         keyFile = argv[1];
