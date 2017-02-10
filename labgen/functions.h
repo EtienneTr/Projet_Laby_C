@@ -7,8 +7,6 @@ void displayarray(int rows, int cols, int **array);
 
 void initarray(int rows, int cols, int **array, int minv, int increment);
 
-void initmatmurs(int rows, int cols, int **array);
-
 int randmax(int max);
 
 int isLabFinished(int rows, int cols, int **array, int minv);

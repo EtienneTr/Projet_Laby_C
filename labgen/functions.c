@@ -3,6 +3,7 @@
 #include <sys/shm.h>
 #include <time.h>
 
+/*Affiche un tableau, pour debug*/
 void displayarray(int rows, int cols, int **array)
 {
     int i, j;
@@ -17,6 +18,7 @@ void displayarray(int rows, int cols, int **array)
     }
 }
 
+/*Initialise un tableau de minv à ... avec un increment*/
 void initarray(int rows, int cols, int **array, int minv, int increment)
 {
     int i, j;
@@ -30,18 +32,7 @@ void initarray(int rows, int cols, int **array, int minv, int increment)
     }
 }
 
-void initmatmurs(int rows, int cols, int **array)
-{
-    int i, j;
-    for ( i=0; i<rows; i++ )
-    {
-        for ( j=0; j<cols; j++ )
-        {
-             array[i][j] = 1;
-        }
-    }
-}
-
+/*Return un int entre 0 et max-1*/
 int randmax(int max)
 {
     int randomnumber;
@@ -49,6 +40,7 @@ int randmax(int max)
     return randomnumber;
 }
 
+/*Return 1 si toutes les cases du tableau sont a minv*/
 int isLabFinished(int rows, int cols, int **array, int minv)
 {
     int i, j;
@@ -65,6 +57,9 @@ int isLabFinished(int rows, int cols, int **array, int minv)
     return 1;
 }
 
+/*Check les cases adjacentes et change leurs valeurs si elles ont la même que bigv
+ * par recursivité
+ */
 void floodfill(int rows, int cols, int **array, int row, int col, int smallv, int bigv)
 {
     if(row<0 || col<0 || row>=rows || col>=cols){
@@ -84,6 +79,7 @@ void floodfill(int rows, int cols, int **array, int row, int col, int smallv, in
     }
 }
 
+/*Casses 2 murs exterieur pour faire une entree et sortie*/
 void createEntreeSortie(int rowsh, int colsh, int **arrayh, int rowsv, int colsv, int **arrayv)
 {
     int r;
@@ -109,6 +105,7 @@ void createEntreeSortie(int rowsh, int colsh, int **arrayh, int rowsv, int colsv
     }
 }
 
+/*Prend un tableau a 2 dimensions sourceArray et le met en 1 dimension dans flatArray*/
 void flattenArray(int rows, int cols, int **sourceArray, int *flatArray)
 {
     flatArray[0] = rows;
@@ -127,6 +124,7 @@ void flattenArray(int rows, int cols, int **sourceArray, int *flatArray)
     }
 }
 
+/*Clear le segment memoire*/
 int clearshm(key_t key, int size) 
 {
     int shmid;
@@ -144,6 +142,7 @@ int clearshm(key_t key, int size)
     return EXIT_SUCCESS;
 }
 
+/*Lit le segment de memoire*/
 int readshm(key_t key, int size) 
 {
     int shmid;
@@ -168,6 +167,7 @@ int readshm(key_t key, int size)
     return (1);
 }
 
+/*Trouve le mur ouvert sur la matrice horizontal et renvoie les coordonnees dans r_row et r_col*/
 int getOpenWallH(int rows, int cols, int **array, int *r_row, int *r_col)
 {
     int i;
@@ -187,6 +187,7 @@ int getOpenWallH(int rows, int cols, int **array, int *r_row, int *r_col)
     }
 }
 
+/*Trouve le mur ouvert sur la matrice vertical et renvoie les coordonnees dans r_row et r_col*/
 int getOpenWallV(int rows, int cols, int **array, int *r_row, int *r_col)
 {
     int i;

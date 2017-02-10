@@ -22,34 +22,36 @@ int main(int argc, char** argv)
     scanf("%d", &nbbot);
     printf("Bot num : %d\n", nbbot);
     
-    int rows = 5;
-    int cols = 5;
+    /*On recup le nb de lignes et colonnes*/
     if (argc > 2)
     {
         rows = strtol(argv[1], NULL, 10);
         cols = strtol(argv[2], NULL, 10);
         printf("rows=%i | cols=%i\n", rows, cols);
     }
+    else
+    {
+        int rows = 5;
+        int cols = 5;
+    }
 
-    
+    /*Generation du labyrinthe*/
     labgen(rows, cols);
+    /*Affichage pour debug*/
     //displayarray(rows, cols, array);printf("\n");
     //displayarray(rows+1, cols, math);printf("\n");
     //displayarray(rows, cols+1, matv);printf("\n");
     
-    
+    /*Initialisation des segments de memoire partagés*/
     key_t key0, key1, key2;
     int shmid0, shmid1, shmid2;
     int sizeToAlloc0 = 4*sizeof(int);
     int sizeToAllocH = (((rows)*(cols+1))+2) * sizeof(int);
     int sizeToAllocV = (((rows+1)*(cols))+2) * sizeof(int);
-    
     char* keyfile = "./keyfile";
     key0 = ftok(keyfile, 0);
     key1 = ftok(keyfile, 1);
     key2 = ftok(keyfile, 2);
-    
-    
     
     shmid0 = shmget(key0, sizeToAlloc0, 0666 | IPC_CREAT);
     if(shmid0 < 0){
@@ -64,8 +66,11 @@ int main(int argc, char** argv)
         printf("shmid2 error.");
     }
     
+    /*0 pour info en vrac*/
     int *data0 = shmat(shmid0, NULL, 0);
+    /*1 pour la matrice de mur horizontaux*/
     int *data1 = shmat(shmid1, NULL, 0);
+    /*2 pour la matrice de mur verticaux*/
     int *data2 = shmat(shmid2, NULL, 0);
     
     /* Data0 */
@@ -87,17 +92,17 @@ int main(int argc, char** argv)
     /* Data2 */
     flattenArray(rows, cols+1, matv, data2);
     
-    readshm(key1, sizeToAllocH);
+    /*Lecture memoire pour debug*/
+    //readshm(key0, sizeToAlloc0);
+    //readshm(key1, sizeToAllocH);
     //readshm(key2, sizeToAllocV);
-    
-    displayarray(rows+1, cols, math);
+    //displayarray(rows+1, cols, math);
     //displayarray(rows, cols+1, matv);
     
+    /*Gestion des bots*/
     waitBot(nbbot, keyfile);
     
-    //readshm(key0, sizeToAlloc0);
-    
-    
+    /*Encore du debug*/
     //displayarray(rows+1, cols, math);
     //readshm(key1, sizeToAllocH);
     //printf("%i, %i\n", data0[2], data0[3]);
@@ -106,9 +111,9 @@ int main(int argc, char** argv)
     //readshm(key2, sizeToAllocV);
     //printf("%i, %i\n", data0[4], data0[5]);
     
-    //clearshm(key0, sizeToAlloc0);
-    //clearshm(key1, sizeToAllocH);
-    //clearshm(key2, sizeToAllocV);
+    clearshm(key0, sizeToAlloc0);
+    clearshm(key1, sizeToAllocH);
+    clearshm(key2, sizeToAllocV);
     
     return (1);
 }
@@ -200,16 +205,20 @@ void labgen(int rows, int cols)
             }
         }
         
-        /* Logique de creation du lab */
-        /*printf("%i: rrow1:%i > %i\n", count, rrow1, array[rrow1][rcol1]);
-        printf("   rcol1:%i\n", rcol1);
-        printf("   rrow2:%i > %i\n", rrow2, array[rrow2][rcol2]);
-        printf("   rcol2:%i\n", rcol2);*/
+        /*Some debug*/
+        //printf("%i: rrow1:%i > %i\n", count, rrow1, array[rrow1][rcol1]);
+        //printf("   rcol1:%i\n", rcol1);
+        //printf("   rrow2:%i > %i\n", rrow2, array[rrow2][rcol2]);
+        //printf("   rcol2:%i\n", rcol2);
+        
+        /* Coeur de la logique de creation du lab */
         int smallv, bigv;
         if( array[rrow1][rcol1] == array[rrow2][rcol2] )
         {
+            /*Si les deux cases ont la même valeur on boucle et rechoisi deux cases*/
             continue;
         }
+        /*Sinon on gere les deux autre cas possible*/
         else if( array[rrow1][rcol1] < array[rrow2][rcol2] )
         {
             smallv = array[rrow1][rcol1];
@@ -247,5 +256,6 @@ void labgen(int rows, int cols)
             }
         }
     }
+    /*On casse deux murs exterieur pour faire une entrée et une sortie*/
     createEntreeSortie(rows+1, cols, math, rows, cols+1, matv);
 }
