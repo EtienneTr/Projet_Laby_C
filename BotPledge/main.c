@@ -213,6 +213,13 @@ int main(int argc, char **argv)
         //sinon paramètres
         keyFile = argv[2];
     }
+
+    int numBot = 0;
+    //demande du numéro du bot
+    printf("Veuillez indiquer un numéro unique du bot (ex: 1) : ");
+    scanf("%d", &numBot);
+    printf("Bot numéro : %d\n", numBot);
+    
 	int debutX = 0;
 	int debutY = -1;
     getTabs(keyFile);
@@ -250,6 +257,9 @@ int main(int argc, char **argv)
 	}
 	printf("position atcuel: x:%d, y:%d direction: %d FIN DU LABYRINTHE\n", bot.cols, bot.rows, bot.d);
 	
+	//envoie pile
+	tellMsg(keyFile, chemin, numBot);
+
 	return 0;
 }
 

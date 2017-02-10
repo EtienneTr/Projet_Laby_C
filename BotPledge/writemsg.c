@@ -12,6 +12,8 @@ typedef struct {
 	char texte[256];
 } message_t;
 
+
+//Ecriture dans la pile de message. En entrée : le fichier de clé, le message, l'id du canal
 void writePile(char* keyFile, char* msg, char* id)
 {
 	key_t     key;
@@ -34,9 +36,10 @@ void writePile(char* keyFile, char* msg, char* id)
 		perror("msgsnd");
 		exit(EXIT_FAILURE);
 	}
-	fprintf(stdout,"Message %s envoyé ! \n", id);
+	fprintf(stdout,"Envoyé : %s\n", msg);
 }
 
+//Lecture de la pile, en entrée : le résultat renvoyé, le fichier de clé, l'id du canal à lire
 char *readPile(char result[], char* keyFile, char* id)
 {
 	key_t     key;
@@ -56,7 +59,7 @@ char *readPile(char result[], char* keyFile, char* id)
 		exit(EXIT_FAILURE);
 	}
 	if (msgrcv(file, (void *) & message, 256, type, 0) >= 0)
-		fprintf(stdout, "Message (%ld) %s \n", message.type, message.texte);
+		fprintf(stdout, "Reçut (%ld) %s\n", message.type, message.texte);
 	else
 		perror("msgrcv2");
 
@@ -64,15 +67,62 @@ char *readPile(char result[], char* keyFile, char* id)
 	return result;
 }
 
-void waitBot(int nbBot, char* keyFile){
+//Fonction d'attente des bots utilisée par le programme principale
+void waitBot(int numBot, char* keyFile){
     char result[256];
 
     //on attend de recevoir les messages de tous les bots
-    for(int i=1; i<= nbBot; i++){
-        readPile(result, keyFile, i);
+    printf("On attend les bots\n");
+    int nbBot = numBot;
+	char* id = malloc(10 * sizeof(int));
+
+    //pour chaque bot, on attend qu'ils soient ready
+    for(int i = 1; i <= nbBot; i++){
+        sprintf(id,"%d",i);
+        readPile(result, "./keyfile", id);
+        if(strcmp(result,"Ready") == 0){
+            printf("Bot %d prêt\n", i);
+            continue;
+
+        }
     }
+    id = malloc(10 * sizeof(int));
+    char* msg = malloc(10 * sizeof(int));
+    //chaque bot est ready !!
+    for(int i = 1; i <= nbBot; i++){
+	sprintf(id,"%d",i);
+	sprintf(msg,"Go,%d",(10*i)); //on envoie sur le channel 10 et 20 (bot 1 et 2)
+        writePile(keyFile, msg, id);
+    }
+    printf("Wait\n");
 
-    //on envoie un message à chaque bot avec un id d'écriture spécifique
 
+	id = malloc(10 * sizeof(int));
+	int maxBot = 1;
+
+	//pour chaque bot, on lit sur son canal et écrit sur le canal+1
+	while(1){
+		for(int i = maxBot; i <= nbBot; i++){
+			sprintf(id,"%d",(10*i));
+			readPile(result, keyFile, id);
+
+			//condition stop
+			if(strcmp(result,"Stop") == 0){
+				if(i == 1) maxBot++;
+				else if (i==2) nbBot--;
+				printf("max %d nb %d\n", maxBot,nbBot);
+			}
+		}
+		if(maxBot > nbBot){
+			break;
+		}
+
+		for(int i = maxBot; i <= nbBot; i++){
+			sprintf(id,"%d",(10*i)+ 1);
+			writePile(keyFile, "Go", id);
+		}
+	}
+
+    return (1);
 
 }
