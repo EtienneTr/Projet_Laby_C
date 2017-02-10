@@ -3,6 +3,7 @@
 #include <time.h>
 #include <sys/shm.h>
 #include "functions.h"
+#include "writemsg.h"
 
 int **array;
 int **math;
@@ -15,6 +16,11 @@ int main(int argc, char** argv)
 {
     system("clear");
     printf("==START==\n");
+    
+    int nbbot;
+    printf("Numéro du bot: ");
+    scanf("%d", &nbbot);
+    printf("Bot num : %d\n", nbbot);
     
     int rows = 5;
     int cols = 5;
@@ -34,13 +40,14 @@ int main(int argc, char** argv)
     
     key_t key0, key1, key2;
     int shmid0, shmid1, shmid2;
-    int sizeToAlloc0 = 6*sizeof(int);
+    int sizeToAlloc0 = 4*sizeof(int);
     int sizeToAllocH = (((rows)*(cols+1))+2) * sizeof(int);
     int sizeToAllocV = (((rows+1)*(cols))+2) * sizeof(int);
     
-    key0 = ftok("./keyfile", 0);
-    key1 = ftok("./keyfile", 1);
-    key2 = ftok("./keyfile", 2);
+    char* keyfile = "./keyfile";
+    key0 = ftok(keyfile, 0);
+    key1 = ftok(keyfile, 1);
+    key2 = ftok(keyfile, 2);
     
     
     
@@ -80,9 +87,16 @@ int main(int argc, char** argv)
     /* Data2 */
     flattenArray(rows, cols+1, matv, data2);
     
-    readshm(key0, sizeToAlloc0);
     readshm(key1, sizeToAllocH);
-    readshm(key2, sizeToAllocV);
+    //readshm(key2, sizeToAllocV);
+    
+    displayarray(rows+1, cols, math);
+    //displayarray(rows, cols+1, matv);
+    
+    waitBot(nbbot, keyfile);
+    
+    //readshm(key0, sizeToAlloc0);
+    
     
     //displayarray(rows+1, cols, math);
     //readshm(key1, sizeToAllocH);
@@ -92,9 +106,9 @@ int main(int argc, char** argv)
     //readshm(key2, sizeToAllocV);
     //printf("%i, %i\n", data0[4], data0[5]);
     
-    clearshm(key0, sizeToAlloc0);
-    clearshm(key1, sizeToAllocH);
-    clearshm(key2, sizeToAllocV);
+    //clearshm(key0, sizeToAlloc0);
+    //clearshm(key1, sizeToAllocH);
+    //clearshm(key2, sizeToAllocV);
     
     return (1);
 }
