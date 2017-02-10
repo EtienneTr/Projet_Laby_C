@@ -6,9 +6,7 @@
 #include <stdio.h>
 #include "readmem.h"
 #include "writemsg.h"
-//#include "functionsMoove.h"
 
-#define LG_CHAINE 256
 enum direction{
 	nord,
 	sud,
@@ -19,11 +17,10 @@ enum direction{
 typedef struct Robots{
 	int cols;
 	int rows;
-	int caseTab;
 	int compteur;
 	enum direction d;
 } robot;
-
+/*matrice de test
 int mursHo[5][4] = {{1,1,1,1}, //matrice mur horizontal
                   {1,0,0,0},
                   {0,1,0,0},
@@ -33,43 +30,36 @@ int mursVe[4][5] = {{0,0,1,0,1}, //matrice mur vertical
                   {1,0,1,1,1},
                   {1,0,0,0,1},
                   {1,0,0,0,1}};
-                  
+*/                  
 int **mursV;
 int **mursH;
-//int compteur=0;
-int taille=4;
-
-int debutX = -1;
-int debutY = -1;
+int debutX=0;
+int debutY=0;
 int finX = 4;
 int finY = 1;
 int rows;
 int cols;
-
-
-
+int ind=0;
+int nbChemin;
+    
 struct Robots deplacement(struct Robots robot){
 	switch(robot.d){
 		//direction precedente vers le sud
 		case sud :
-			if(mursVe[robot.rows][robot.cols]==0){//vers ouest
+			if(mursV[robot.rows][robot.cols]==0 && entreeLab(robot, ouest)!=0){//vers ouest
 				robot.cols--;
-				//robot.caseTab-=1;
 				robot.d=ouest;
 				robot.compteur--;
-			}else if(mursHo[robot.rows+1][robot.cols]==0){//vers le sud
+			}else if(mursH[robot.rows+1][robot.cols]==0 && entreeLab(robot, sud)!=0){//vers le sud
 				robot.rows++;
-				//robot.caseTab+=taille;
 				robot.d=sud;
 				robot.compteur = robot.compteur;
-			}else if(mursVe[robot.rows][robot.cols+1]==0){//vers est
+			}else if(mursV[robot.rows][robot.cols+1]==0 && entreeLab(robot, est)!=0){//vers est
 				robot.cols++;
-				//robot.caseTab+=1;
 				robot.d=est;
 				robot.compteur++;
-			}else if(mursHo[robot.rows][robot.cols]==0){//vers le nord
+			}else if(mursH[robot.rows][robot.cols]==0 && robot.rows!=0 && entreeLab(robot, nord)!=0){//vers le nord
 				robot.rows--;
-				//robot.caseTab-=taille;
 				robot.d=nord;
 				robot.compteur+=2;
 			}
@@ -77,24 +67,20 @@ struct Robots deplacement(struct Robots robot){
 			break;
 		//direction precedente vers le nord
 		case nord :
-			if(mursVe[robot.rows][robot.cols+1]==0){//vers est
+			if(mursV[robot.rows][robot.cols+1]==0 && entreeLab(robot, est)!=0){//vers est
 				robot.cols++;
-				//robot.caseTab+=1;
 				robot.d=est;
 				robot.compteur--;
-			}else if(mursHo[robot.rows][robot.cols]==0){//vers le nord
+			}else if(mursH[robot.rows][robot.cols]==0 && entreeLab(robot, est)!=0){//vers le nord
 				robot.rows--;
-				//robot.caseTab-=taille;
 				robot.d=nord;
 				robot.compteur = robot.compteur;
-			}else if(mursVe[robot.rows][robot.cols]==0){//vers ouest
+			}else if(mursV[robot.rows][robot.cols]==0 && entreeLab(robot, est)!=0){//vers ouest
 				robot.cols--;
-				//robot.caseTab-=1;
 				robot.d=ouest;
 				robot.compteur++;
-			}else if(mursHo[robot.rows+1][robot.cols]==0){//vers le sud
+			}else if(mursH[robot.rows+1][robot.cols]==0 && entreeLab(robot, sud)!=0){//vers le sud
 				robot.rows++;
-				//robot.caseTab+=taille;
 				robot.d=sud;
 				robot.compteur+=2;
 			}
@@ -102,24 +88,20 @@ struct Robots deplacement(struct Robots robot){
 			break;
 		//direction precedente vers l'est
 		case est :
-			if(mursHo[robot.rows+1][robot.cols]==0){//vers le sud
+			if(mursH[robot.rows+1][robot.cols]==0 && entreeLab(robot, sud)!=0){//vers le sud
 				robot.rows++;
-				//robot.caseTab+=taille;
 				robot.d=sud;
 				robot.compteur--;
-			}else if(mursVe[robot.rows][robot.cols+1]==0){//vers est
+			}else if(mursV[robot.rows][robot.cols+1]==0 && entreeLab(robot, est)!=0){//vers est
 				robot.cols++;
-				//robot.caseTab+=1;
 				robot.d=est;
 				robot.compteur = robot.compteur;
-			}else if(mursHo[robot.rows][robot.cols]==0){//vers le nord
+			}else if(mursH[robot.rows][robot.cols]==0 && robot.rows!=0 && entreeLab(robot, nord)!=0){//vers le nord
 				robot.rows--;
-				//robot.caseTab-=taille;
 				robot.d=nord;
 				robot.compteur++;
-			}else if(mursVe[robot.rows][robot.cols]==0){//vers ouest
+			}else if(mursV[robot.rows][robot.cols]==0 && robot.cols!=0 && entreeLab(robot, ouest)!=0){//vers ouest
 				robot.cols--;
-				//robot.caseTab-=1;
 				robot.d=ouest;
 				robot.compteur+=2;
 			}
@@ -127,24 +109,20 @@ struct Robots deplacement(struct Robots robot){
 			break;
 		//direction precedente vers l'ouest
 		case ouest :
-			if(mursHo[robot.rows][robot.cols]==0){//vers le nord
+			if(mursH[robot.rows][robot.cols]==0 && entreeLab(robot, nord)!=0){//vers le nord
 				robot.rows--;
-				//robot.caseTab-=taille;
 				robot.d=nord;
 				robot.compteur--;
-			}else if(mursVe[robot.rows][robot.cols]==0 && robot.cols!=0){//vers ouest
+			}else if(mursV[robot.rows][robot.cols]==0 && entreeLab(robot, ouest)!=0){//vers ouest
 				robot.cols--;
-				//robot.caseTab-=1;
 				robot.d=ouest;
 				robot.compteur = robot.compteur;
-			}else if(mursHo[robot.rows+1][robot.cols]==0){//vers le sud
+			}else if(mursH[robot.rows+1][robot.cols]==0 && entreeLab(robot, sud)!=0){//vers le sud
 				robot.rows++;
-				//robot.caseTab+=taille;
 				robot.d=sud;
 				robot.compteur++;
-			}else if(mursVe[robot.rows][robot.cols+1]==0){//vers est
+			}else if(mursV[robot.rows][robot.cols+1]==0 && entreeLab(robot, est)!=0){//vers est
 				robot.cols++;
-				//robot.caseTab+=1;
 				robot.d=est;
 				robot.compteur+=2;
 			}
@@ -156,15 +134,13 @@ struct Robots deplacement(struct Robots robot){
 
 struct Robots compteurZero(struct Robots robot){
 	while(1){
-		if(robot.d == ouest && mursVe[robot.rows][robot.cols]==0){
+		if(robot.d == ouest && mursV[robot.rows][robot.cols]==0){
 			robot.cols--;
-			robot.caseTab-=1;
-		}else if(robot.d == nord && mursHo[robot.rows][robot.cols]==0){
+		}else if(robot.d == nord && mursH[robot.rows][robot.cols]==0){
 			robot.rows--;
-		}else if(robot.d == est && mursVe[robot.rows][robot.cols+1]==0){
+		}else if(robot.d == est && mursV[robot.rows][robot.cols+1]==0){
 			robot.cols++;
-			robot.caseTab+=1;
-		}else if(robot.d == sud && mursHo[robot.rows+1][robot.cols]==0){
+		}else if(robot.d == sud && mursH[robot.rows+1][robot.cols]==0){
 			robot.rows++;
 		}
 		else{
@@ -175,36 +151,60 @@ struct Robots compteurZero(struct Robots robot){
 }
 
 struct Robots firstMoov(struct Robots robot){
-	if(mursVe[robot.rows][robot.cols+1]==0){
+	if(mursV[robot.rows][robot.cols+1]==0 && entreeLab(robot, est)!=0){//deplacement vers est
 		robot.cols++;
-		robot.rows=0;
-		//robot.caseTab=(taille*robot.rows)+robot.cols;
-		robot.d=est;
-	}else if(mursHo[robot.rows+1][robot.cols]==0){
-		robot.rows--;
-		robot.cols=0;
-		//robot.caseTab=(taille*robot.rows)+robot.cols;
-		robot.d=nord;
-	}else if(mursVe[robot.rows][robot.cols]==0){
+		robot.rows=robot.rows;
+		robot.d=est;		
+	}else if(mursH[robot.rows+1][robot.cols]==0 && entreeLab(robot, sud)!=0){//deplacemnt vers le sud
 		robot.rows++;
-		robot.cols=0;
-		//robot.caseTab=(taille*robot.rows)+robot.cols;
+		robot.cols=robot.cols;
 		robot.d=sud;
-	}else if(mursHo[robot.rows][robot.cols]==0){
-		robot.cols++;
-		robot.rows=0;
-		//robot.caseTab=(taille*robot.rows)+robot.cols;
+	}else if(mursV[robot.rows][robot.cols-1]==0 && entreeLab(robot, ouest)!=0){//deplacement vers l'ouest
+		robot.cols--;
+		robot.rows=robot.rows;
 		robot.d=ouest;
+	}else if(mursH[robot.rows-1][robot.cols]==0 && entreeLab(robot, nord)!=0){//deplacement vers le nord
+		robot.rows--;
+		robot.cols=robot.cols;
+		robot.d=nord;
 	}
 	return robot;
 }
 
+int entreeLab(struct Robots robot, enum direction direct){
+	if(direct==ouest){
+		int colsD=robot.cols--;
+		if(robot.rows == debutX && colsD == debutY){
+			return 0;
+		}
+	}else if(direct==nord){
+		int rowsD=robot.rows--;
+		if(rowsD == debutX && robot.cols == debutY){
+			return 0;
+		}
+	}else if(direct==est){
+		int colsD=robot.cols+1;
+		if(robot.rows == debutX && colsD == debutY){
+			return 0;
+		}
+	}else if(direct==sud){
+		int rowsD=robot.rows++;
+		if(rowsD == debutX && robot.cols == debutY){
+			return 0;
+		}
+	}
+	return 1;	
+}
 // +1 quand il tourne à gauche -1 quand il torune à droite, quand 0 refait etape 1
 
 int main(int argc, char **argv)
 {
+	struct Robots bot;//declaration du bot
+	bot.cols=0;
+	bot.rows=0;
+	bot.compteur=0;
+	
 	printf("Bot Pledge\n");
-	// x=Coll et y=Row inverse de Dijtra
     char* keyFile = "";
     if (argc != 2) {
         //pas de clés
@@ -213,30 +213,39 @@ int main(int argc, char **argv)
         //sinon paramètres
         keyFile = argv[2];
     }
-
+	int debutX = 0;
+	int debutY = -1;
     getTabs(keyFile);
-    printf("debut %d fin %d\n", debutX, debutY);
+    printf("debut %d fin %d\n", debutX, debutY);   
+	int chemin[rows*cols*2];
+	
     //première case
     int posRows = firstCase(debutX, rows);
     int posCols = firstCase(debutY, cols);
-    
-	struct Robots bot;
-	bot.cols=0;
-	bot.rows=0;
-	bot.compteur=0;
-	int sortie=17;
-	bot = firstMoov(bot);
+
+	bot = firstMoov(bot);// premier deplacement
+	chemin[ind] = bot.rows;
+	chemin[ind + 1] = bot.cols;
+	ind += 2;
 	printf("position atcuel: x:%d, y:%d direction: %d\n", bot.cols, bot.rows, bot.d);
-	//compteurZero(robot);
 	while (1){
-		if(bot.rows==3 && bot.cols==1){
+		if(bot.rows==finX && bot.cols==finY){//si la fin
 			break;
 		}
 		if(bot.compteur==0){
-			bot = compteurZero(bot);
-			bot = deplacement(bot);
+			bot = compteurZero(bot);//deplacement en ligne droite
+			chemin[ind] = bot.rows;
+			chemin[ind + 1] = bot.cols;
+			ind += 2;
+			bot = deplacement(bot);//un deplacement apres le compteur à 0
+			chemin[ind] = bot.rows;
+			chemin[ind + 1] = bot.cols;
+			ind += 2;
 		}else{
-			bot = deplacement(bot);
+			bot = deplacement(bot);// deplacement normal vers la droite
+			chemin[ind] = bot.rows;
+			chemin[ind + 1] = bot.cols;
+			ind += 2;
 		}
 	}
 	printf("position atcuel: x:%d, y:%d direction: %d FIN DU LABYRINTHE\n", bot.cols, bot.rows, bot.d);
@@ -252,4 +261,42 @@ int firstCase(int x, int max){
     }
 
     return x;
+}
+
+void tellMsg(char * keyFile, int chemin[rows*cols*2], int nbBot){
+
+    char* id = malloc(10 * sizeof(int)); //id du premier canal d'écriture
+    char* id2 = malloc(10 * sizeof(int)); //id du canal de réponse, en écoute
+    sprintf(id,"%d",nbBot);
+
+    //on indique qu'on est prêt pour la communication
+    writePile(keyFile, "Ready", id);
+    char *result= malloc(256);
+    //en retour on a un message de type : Go,id avec 'id' le canal sur lequel il faut écrire
+    int msg = readPile(result, keyFile, id);
+    char *p;
+    char *saveptr1;
+    p = strtok_r(result, ",", &saveptr1);
+
+    if(strcmp(p,"Go") == 0){
+        //récup du canal d'écriture, lecture = canal écriture + 1
+        int numPile = atoi(strtok_r(NULL, ",", &saveptr1));
+        printf("Le bot envoie les positions, canal n° %d\n", numPile);
+        char* msg;
+        msg = malloc(10 * sizeof(int));
+        for(int i = 0; i != nbChemin; i -= 2){
+            sprintf(msg,"%d,%d",chemin[i+1], chemin[i]); // i,j
+            sprintf(id,"%d",numPile);
+            printf("Envoie %s\n", msg);
+            writePile(keyFile, msg, id);
+            sprintf(id2,"%d",numPile + 1);
+            int msg = readPile(result, keyFile, id2);
+            if(strcmp(result,"Go") == 0){
+                continue;
+            }
+        }
+        //on stop
+        writePile(keyFile, "Stop", id);
+
+    }
 }
